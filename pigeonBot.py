@@ -3,63 +3,60 @@ import speech_recognition as sRec
 import pyttsx3
 import kivy
 from kivy.app import App
+from kivy.lang import Builder
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
+from kivy.uix.widget import Widget
+from kivy.properties import ObjectProperty
+
 from email.message import EmailMessage
 
 
-class Pigeon(App):
-    def build(self):
-        return ContentGrid()
 
-class ContentGrid(GridLayout):
-    def __init__(self, **kwargs):
-        super(ContentGrid, self).__init__(**kwargs)
-        self.cols = 1                               # Columns in main grid layout         
+class Pigeon(Screen):
+    listener = sRec.Recognizer()
+    engine = pyttsx3.init()
 
-        self.add_widget(Label(text="Pigeon - Your personal Email Bot is listenning"))
-        self.header = TextInput(multiline=False)
-        # self.add_widget(self.header)
+    def talking(text):
+        engine.say(text)
+        engine.runAndWait()
 
-        # New grid layout
-        self.inside = GridLayout()                 # Creating multiple grid layout
-        self.inside.cols = 2                        # Columns in new grid layout
+    sender = ObjectProperty(None)
+    receiver = ObjectProperty(None)
+    subject = ObjectProperty(None)
+    message = ObjectProperty(None)
 
-        self.inside.add_widget(Label(text="Receipient: "))
-        self.adrs = TextInput(multiline=False)
-        self.inside.add_widget(self.adrs)
+    def get_info():
+        try:
+            with sRec.Microphone() as source:
+                print('Listening...')
+                voice = listener.listen(source)
+                info = listener.recognize_google(voice)
+                print(info)
+                return info.capitalize()
+        except:
+            pass
+    
+    
 
-        self.inside.add_widget(Label(text="Subject: "))
-        self.sub = TextInput(multiline=True)
-        self.inside.add_widget(self.sub)
+class ContentGrid(Widget):
+    
+    sender = ObjectProperty(None)
+    receiver = ObjectProperty(None)
 
-        self.inside.add_widget(Label(text="Message: "))
-        self.msg = TextInput(multiline=True)
-        self.inside.add_widget(self.msg)
+    def btn(self):
+        print("Sender is", self.sender.text, "Receiver", self.receiver.text)
+        self.sender.text = ""
+        self.receiver.text = ""
 
-        self.add_widget(self.inside)
+        
 
-        self.add_widget(Label(text="Connfirmation..."))
-        self.confMsg = TextInput(multiline=True)
 
-# listener = sRec.Recognizer()
-# engine = pyttsx3.init()
 
-# def talking(text):
-#     engine.say(text)
-#     engine.runAndWait()
 
-# def get_info():
-#     try:
-#         with sRec.Microphone() as source:
-#             print('Listening...')
-#             voice = listener.listen(source)
-#             info = listener.recognize_google(voice)
-#             print(info)
-#             return info.capitalize()
-#     except:
-#         pass
 
 # def send_email(receiver, subject, message):    
 #     server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -98,7 +95,7 @@ class ContentGrid(GridLayout):
 #     message = get_info()
 
 #     send_email(receiver, subject, message)
-#     talking('Your message is sent you lazy dumb !')
+#     talking('Your message is sent you lazy freak !')
 #     talking('Do you want to sent more email ?')
 #     send_more = get_info()
 #     if 'Yes' in send_more:
@@ -108,3 +105,4 @@ class ContentGrid(GridLayout):
 
 if __name__ == "__main__":
     Pigeon().run()
+    
